@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "verify:m1": "node scripts/verify-m1-flow.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
