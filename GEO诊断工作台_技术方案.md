@@ -81,25 +81,25 @@ Markdown 报告模板
 
 推荐技术栈：
 
-| 层级 | 推荐方案 |
-|---|---|
-| 前端 | Next.js + TypeScript + Tailwind CSS |
-| UI 组件 | shadcn/ui 或 Ant Design |
-| 后端 | Next.js API Routes / NestJS |
-| 数据库 | PostgreSQL |
-| ORM | Prisma |
+| 层级 | 推荐方案                                    |
+|---|-----------------------------------------|
+| 前端 | Nuxt.js + TypeScript + Tailwind CSS     |
+| UI 组件 | shadcn/ui                   |
+| 后端 | Nuxt.js API Routes / NestJS             |
+| 数据库 | PostgreSQL                              |
+| ORM | Prisma                                  |
 | 文件存储 | S3 兼容对象存储 / Supabase Storage / 本地 MinIO |
-| 鉴权 | NextAuth / Supabase Auth |
-| LLM 接入 | OpenAI API / 通义 / DeepSeek / Kimi 等可切换 |
-| 队列 | BullMQ + Redis |
-| 报告生成 | Markdown 模板 + PDF 生成 |
-| 部署 | Vercel / Docker / 阿里云 ECS |
-| 日志 | Pino / Winston |
-| 监控 | Sentry / OpenTelemetry 可后置 |
+| 鉴权 | NuxtAuth / Supabase Auth                |
+| LLM 接入 | OpenAI API / 通义 / DeepSeek / Kimi 等可切换  |
+| 队列 | BullMQ + Redis                          |
+| 报告生成 | Markdown 模板 + PDF 生成                    |
+| 部署 | Vercel / Docker / 阿里云 ECS               |
+| 日志 | Pino / Winston                          |
+| 监控 | Sentry / OpenTelemetry 可后置              |
 
 ### 3.3 为什么推荐这套
 
-1. Next.js 适合快速做内部产品。
+1. Nuxt.js 适合快速做内部产品。
 2. TypeScript 保证后续迭代稳定性。
 3. PostgreSQL 适合结构化诊断数据。
 4. Prisma 方便快速建模。
@@ -115,7 +115,7 @@ Markdown 报告模板
 ```text
 用户浏览器
   ↓
-Next.js 前端
+Nuxt.js 前端
   ↓
 API 服务层
   ↓
@@ -915,7 +915,7 @@ P2 阶段再做。
 Node.js
 PostgreSQL Docker
 Redis Docker
-Next.js Dev Server
+Nuxt.js Dev Server
 ```
 
 ## 12.2 内部 MVP 部署
