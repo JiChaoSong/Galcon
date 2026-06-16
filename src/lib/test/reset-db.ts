@@ -10,4 +10,19 @@ export async function resetDb() {
   await prisma.question.deleteMany();
   await prisma.brand.deleteMany();
   await prisma.project.deleteMany();
+
+  // Re-seed platforms if they were deleted
+  const platformCount = await prisma.platform.count();
+  if (platformCount < 5) {
+    await prisma.platform.createMany({
+      data: [
+        { name: "DeepSeek", region: "国内", supportsWebSearch: true, testMethod: "手动" },
+        { name: "Kimi", region: "国内", supportsCitation: true, supportsWebSearch: true, testMethod: "手动" },
+        { name: "豆包", region: "国内", supportsWebSearch: true, testMethod: "手动" },
+        { name: "通义千问", region: "国内", supportsWebSearch: true, testMethod: "手动" },
+        { name: "ChatGPT", region: "海外", supportsCitation: true, supportsWebSearch: true, testMethod: "手动" },
+      ],
+      skipDuplicates: true,
+    });
+  }
 }
