@@ -43,7 +43,6 @@ const projectId = route.params.id as string
 
 const batch = computed(() => store.getBatch(batchId))
 const batchItems = computed(() => store.getBatchItems(batchId))
-const projectTasks = computed(() => store.tasks.filter((item) => item.projectId === projectId))
 
 const queueTab = ref<QueueTab>('all')
 const searchKeyword = ref('')
@@ -64,7 +63,6 @@ onMounted(async () => {
   await Promise.all([
     store.fetchBatches(projectId),
     store.fetchItems(batchId),
-    store.fetchTaskStats(projectId),
   ])
 })
 
@@ -102,26 +100,13 @@ const queueCounts = computed(() => ({
 }))
 
 const progressStats = computed(() => {
-  const stats = store.taskStats
-  if (stats) {
-    return {
-      total: stats.total || 1,
-      completed: stats.completed,
-      percent: stats.percent,
-      pass: stats.pass,
-      partial: stats.partial,
-      failed: stats.failed,
-      pending: stats.pending,
-    }
-  }
-  // fallback: 本地计算
-  const total = projectTasks.value.length || batchItems.value.length || 1
-  const completed = projectTasks.value.filter((item) => item.status === 'done' || item.status === 'review').length
-  const pass = projectTasks.value.filter((item) => store.getAnalysis(item.id)?.accuracyStatus === 'accurate').length
-  const partial = projectTasks.value.filter((item) => store.getAnalysis(item.id)?.accuracyStatus === 'partial').length
-  const failed =
-    projectTasks.value.filter((item) => item.status === 'error').length +
-    projectTasks.value.filter((item) => store.getAnalysis(item.id)?.accuracyStatus === 'wrong').length
+  const items = batchItems.value
+  const total = items.length || 1
+  const completed = items.filter((i) => i.status === 'done' || i.status === 'review' || i.status === 'error').length
+  const pending = items.filter((i) => i.status === 'pending').length
+  const failed = items.filter((i) => i.status === 'error').length
+  const pass = items.filter((i) => store.getAnalysis(i.id)?.accuracyStatus === 'accurate').length
+  const partial = items.filter((i) => store.getAnalysis(i.id)?.accuracyStatus === 'partial').length
 
   return {
     total,
@@ -130,7 +115,7 @@ const progressStats = computed(() => {
     pass,
     partial,
     failed,
-    pending: Math.max(total - completed, 0),
+    pending,
   }
 })
 
@@ -360,7 +345,6 @@ async function submitAnalysis() {
     await store.setItemStatus(selectedItem.value.id, 'review')
     // 触发 AI 分析
     await store.requestAnalysis(selectedItem.value.id)
-    await store.fetchTaskStats(projectId)
     message.success('已提交并完成分析')
   } catch (e: any) {
     message.error(e?.message ?? '提交失败')
@@ -376,7 +360,6 @@ async function reAnalyze() {
   try {
     message.loading({ content: '正在重新分析...', key: 'reanalyze' })
     await store.requestAnalysis(selectedItem.value.id)
-    await store.fetchTaskStats(projectId)
     message.success({ content: '分析完成', key: 'reanalyze' })
   } catch (e: any) {
     message.error({ content: e?.message ?? '分析失败', key: 'reanalyze' })
