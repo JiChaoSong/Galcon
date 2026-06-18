@@ -1,0 +1,155 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── 项目（PRD 7.1） ──
+model Project {
+  id          String   @id @default(uuid())
+  name        String
+  type        String   // sample | client | monthly
+  industry    String
+  subIndustry String?
+  targetMarket String?
+  status      String   @default("preparing") // preparing | testing | analyzing | completed
+  startDate   DateTime?
+  endDate     DateTime?
+  owner       String
+  description String?  @db.Text
+  taskTotal   Int      @default(0)
+  taskDone    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  brands      Brand[]
+  questions   Question[]
+  batches     TaskBatch[]
+}
+
+// ── 品牌（PRD 7.2） ──
+model Brand {
+  id        String   @id @default(uuid())
+  projectId String
+  name      String
+  website   String?
+  industry  String?
+  category  String?
+  intro     String?  @db.Text
+  customers String?  @db.Text
+  products  String?  @db.Text
+  notes     String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project     Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  competitors Competitor[] @relation("TargetBrand")
+
+  @@index([projectId])
+}
+
+// ── 竞品关系（PRD 7.3） ──
+model Competitor {
+  id              String   @id @default(uuid())
+  projectId       String
+  brandId         String
+  competitorName  String
+  type            String   // direct | alternative | international | indirect
+  priority        String   @default("medium") // high | medium | low
+  notes           String?  @db.Text
+  createdAt       DateTime @default(now())
+
+  brand  Brand  @relation("TargetBrand", fields: [brandId], references: [id], onDelete: Cascade)
+
+  @@index([brandId])
+  @@index([projectId])
+}
+
+// ── 问题库（PRD 7.5） ──
+model Question {
+  id              String   @id @default(uuid())
+  projectId       String
+  text            String   @db.Text
+  industry        String?
+  type            String   // category_recommend | competitor_compare | scenario_solve | purchase_decision | alternative | brand_perception | risk_reputation
+  intent          String?
+  difficulty      String   @default("basic") // basic | medium | deep
+  sortOrder       Int      @default(0)
+  analysisOrder   Int      @default(0)
+  analysisPhase   String?
+  globalTestOrder Int      @default(0)
+  testBatch       String?
+  isGeneral       Boolean  @default(false)
+  createdByAI     Boolean  @default(false)
+  status          String   @default("enabled") // pending | enabled | deprecated
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  items   TaskItem[]
+
+  @@index([projectId])
+}
+
+// ── 测试批次 ──
+model TaskBatch {
+  id          String   @id @default(uuid())
+  projectId   String
+  name        String
+  platformId  String
+  platformName String
+  brandId     String
+  brandName   String
+  assignedTo  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  project Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  items   TaskItem[]
+
+  @@index([projectId])
+}
+
+// ── 批次内的单条测试记录（PRD 7.6） ──
+model TaskItem {
+  id           String   @id @default(uuid())
+  batchId      String
+  questionId   String
+  questionText String
+  status       String   @default("pending") // pending | done | review | error
+  answerText   String?  @db.Text
+  testedAt     String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  batch    TaskBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  question Question  @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  analysis AnswerAnalysis?
+
+  @@index([batchId])
+  @@index([questionId])
+}
+
+// ── AI 回答解析结果（PRD 7.7） ──
+model AnswerAnalysis {
+  id                      String   @id @default(uuid())
+  taskItemId              String   @unique
+  taskItem                TaskItem @relation(fields: [taskItemId], references: [id], onDelete: Cascade)
+  mentionedBrands         Json     @default("[]")
+  targetBrandMentioned    Boolean  @default(false)
+  targetBrandRank         Int      @default(0)
+  targetBrandRecommended  Boolean  @default(false)
+  competitorsMentioned    Json     @default("[]")
+  citationSources         Json     @default("[]")
+  answerSummary           String?  @db.Text
+  accuracyStatus          String   @default("unknown") // accurate | partial | wrong | unknown
+  sentiment               String   @default("neutral") // positive | neutral | negative | mixed
+  riskTypes               Json     @default("[]")
+  optimizationSuggestions String?  @db.Text
+  manualChecked           Boolean  @default(false)
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+}
