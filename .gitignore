@@ -16,6 +16,8 @@ dist-ssr
 vite-project/.vscode/extensions.json
 !.vscode/extensions.json
 .idea
+.codegraph
+.reasonix
 .DS_Store
 *.suo
 *.ntvs*
