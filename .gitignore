@@ -18,6 +18,8 @@ vite-project/.vscode/extensions.json
 .idea
 .codegraph
 .reasonix
+.env
+.env.local
 .DS_Store
 *.suo
 *.ntvs*
